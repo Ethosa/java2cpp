@@ -74,9 +74,9 @@ class Java2Cpp(Translator):
          r"", None, 0),
 
         # min + rnd.nextInt(max - min + 1)
-        # rand() % min + (max - min + 1)
+        # rand_r() % min + (max - min + 1)
         (r"(\S+)[ ]*\+[ ]*[a-zA-Z0-9_]+::nextInt(\([^\)]+\))",
-         r"rand() % \2 + \1", None, 0),
+         r"rand_r() % \2 + \1", None, 0),
 
         # 100_000_000
         # 100000000
@@ -128,7 +128,10 @@ class Java2Cpp(Translator):
         # end ...
         # int main ...
         (r"\Z",
-         r"\n\nint main (int argc, char *argv[])\n{\n    srand(time(NULL));\n    std::vector<std::string> args(argv, argv + argc);\n    Main m;\n    m.main(args.data());\n}", None, 0),
+         (r"\n\nint main (int argc, char *argv[])\n{"
+          r"\n    srand(time(NULL));\n    std::vector"
+          r"<std::string> args(argv, argv + argc);\n "
+          r"   Main m;\n    m.main(args.data());\n}"), None, 0),
 
         # ;
         #
