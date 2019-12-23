@@ -1,11 +1,4 @@
-# -*- coding: utf-8 -*-
-# author: Ethosa
-
-from java2cpp import Java2Cpp
-
-j = Java2Cpp()
-
-text = """package sosalesosa;
+package sosalesosa;
 
 import java.util.*;
 
@@ -40,6 +33,7 @@ class Main {
         ArrayList<String> c = new ArrayList();
         c.add("Hello world");
         System.out.println(c);
+        System.out.println(c.indexOf("Hello world"));
     }
     public static int test(){
         var r = new Random();
@@ -52,6 +46,4 @@ class Main {
         String timed = "timed";
         return timed + a;
     }
-}"""
-
-print(j.translate(text))
+}

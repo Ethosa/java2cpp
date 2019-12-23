@@ -2,6 +2,12 @@
 #include <vector>
 #include <cstdlib>
 #include <time.h>
+#include <map>
+#include <cassert>
+#include <set>
+#include <list>
+
+
 
 
 class Main 
@@ -18,7 +24,27 @@ class Main
             std::cout << test() << std::endl;
         }
 
+        std::map<std::string, int> m;
+        m["hello world"] = 5;
+        m["a"] = 1777;
+        std::cout << m["hello world"] << std::endl;
+        std::cout << m["a"] << std::endl;
+
+        if (m.find("b") != m.end())
+            std::cout << "contains!" << std::endl;
+        else
+            std::cout << "not contains :(" << std::endl;
+
+        std::set<std::string> b;
+        b.insert("lol");
+        for (auto& obj: b) std::cout << obj << std::endl;
+        if (b.find("lol") != b.end()) std::cout << "lol contains :|" << std::endl;
+
+        std::list<std::string> c;
+        c.push_back("Hello world");
+        for (auto& obj: c) std::cout << obj << std::endl;
     }
+
     public:
     static int test()
     {
@@ -39,7 +65,6 @@ class Main
 
 int main (int argc, char *argv[])
 {
-    srand(time(NULL));
     std::vector<std::string> args(argv, argv + argc);
     Main m;
     m.main(args.data());

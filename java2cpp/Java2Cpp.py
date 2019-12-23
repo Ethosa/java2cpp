@@ -56,8 +56,8 @@ class Java2Cpp(Translator):
 
         # Namespace.test
         # Namespace::test
-        (r"([^\r\n]+)\.([^\r\n]+)",
-         r"\1::\2", None, 0),
+        # (r"([^\r\n]+)\.([^\r\n]+)",
+        #  r"\1::\2", None, 0),
 
         # public abstract class
         # class
@@ -75,8 +75,8 @@ class Java2Cpp(Translator):
 
         # min + rnd.nextInt(max - min + 1)
         # rand_r() % min + (max - min + 1)
-        (r"(\S+)[ ]*\+[ ]*[a-zA-Z0-9_]+::nextInt(\([^\)]+\))",
-         r"rand_r() % \2 + \1", None, 0),
+        (r"(\S+)[ ]*\+[ ]*[a-zA-Z0-9_]+.nextInt(\([^\)]+\))",
+         r"rand() % \2 + \1", None, 0),
 
         # 100_000_000
         # 100000000
@@ -118,7 +118,41 @@ class Java2Cpp(Translator):
         #
         # #include <iostream>
         (r"\A",
-         r"#include <iostream>\n#include <vector>\n#include <cstdlib>\n#include <time.h>\n", None, 0),
+         (r"#include <iostream>\n#include <vector>\n"
+          r"#include <cstdlib>\n#include <time.h>\n#"
+          r"include <map>\n#include <cassert>\n#incl"
+          r"ude <set>\n#include <list>\n#include <al"
+          r"gorithm>\n"), None, 0),
+
+        # Object
+        # void*
+        (r"Object",
+         r"void*", None, 0),
+
+        # Integer
+        # int
+        (r"\bInteger",
+         r"int", None, 0),
+
+        # import asd.*;
+        #
+        (r"[\r\n]import[ ]*[^\r\n]+;",
+         r"", None, 0),
+
+        # package asd.*;
+        #
+        (r"[\r\n]package[ ]*[^\r\n]+;",
+         r"", None, 0),
+
+        # catch (Exception e)
+        # catch (...)
+        (r"catch[ ]*\([ ]*Exception[ ]*[a-zA-Z0-9_]+[ ]*\)",
+         r"catch (...)", None, 0),
+
+        # (int)5.0
+        # *((int*)5.0)
+        (r"\([ ]*(int|float|double|unsigned int)[ ]*\)[ ]*(\S+)",
+         r"*((\1*)\2)", None, 0),
 
         # var ...
         # auto ...
@@ -129,17 +163,92 @@ class Java2Cpp(Translator):
         # int main ...
         (r"\Z",
          (r"\n\nint main (int argc, char *argv[])\n{"
-          r"\n    srand(time(NULL));\n    std::vector"
-          r"<std::string> args(argv, argv + argc);\n "
-          r"   Main m;\n    m.main(args.data());\n}"), None, 0),
+          r"\n    std::vector<std::string> args(argv"
+          r", argv + argc);\n    Main m;\n    m.main"
+          r"(args.data());\n}"), None, 0),
 
         # ;
         #
         (r"[\r\n]+[ ]*;[\r\n]+",
          r"\n", None, 0),
 
+        # ----------- Hash Map -----------
+        # HashMap<String, int> m = new HashMap<>();
+        # std::map<std::string, int> m;
+        (r"(?P<first>(HashMap|auto)(?P<mapinfo><[^,]+,[ ]*[^>]+>)[ ]*(?P<var_name>[a-zA-Z0-9_]+)[ ]*=[ ]*new[ ]*HashMap<>\(\))",
+         r"std::map\g<mapinfo> \g<var_name>", None, 0),
+
+        # m.put("1", 1)
+        # m["1"] = 1
+        ((r"(?P<first>std::map(?P<mapinfo><[^,]+,[ ]*[^>]+>)[ ]*(?P<var_name>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<putting>[\s\S]+(?P=var_name)).put\((?P<key>[^,]+),[ ]*(?P<value>[^\)]+)\)"),
+         (r"std::map\g<mapinfo> \g<var_name>\g<putting>[\g<key>] = \g<value>"), None, 70),
+
+        # m.get("a")
+        # m["a"]
+        ((r"(?P<first>std::map(?P<mapinfo><[^,]+,[ ]*[^>]+>)[ ]*(?P<var_name>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<getting>[\s\S]+(?P=var_name)).get\([ ]*(?P<key>[^\)]+)\)"),
+         (r"std::map\g<mapinfo> \g<var_name>\g<getting>[\g<key>]"), None, 70),
+
+        # m.containsKey("a")
+        # m["a"]
+        ((r"(?P<first>std::map(?P<mapinfo><[^,]+,[ ]*[^>]+>)[ ]*(?P<var_name>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<getting>[\s\S]+(?P=var_name)).containsKey\([ ]*(?P<key>[^\)]+)\)"),
+         (r"std::map\g<mapinfo> \g<var_name>\g<getting>.find(\g<key>) != \g<var_name>.end()"), None, 70),
+
+        # m.size()
+        # m.count()
+        ((r"(?P<first>std::map(?P<mapinfo><[^,]+,[ ]*[^>]+>)[ ]*(?P<var_name>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<getting>[\s\S]+(?P=var_name)).size\([ ]*\)"),
+         (r"std::map\g<mapinfo> \g<var_name>\g<getting>.count()"), None, 70),
+        # ----------- Hash Map -----------
+
+        # ----------- Hash Set -----------
+        # HashSet<String> m = new HashSet();
+        # std::set<std::string> m;
+        ((r"HashSet(?P<setinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*=[ ]*new[ ]*HashSet[ ]*\(\)"),
+         (r"std::set\g<setinfo> \g<var>"), None, 0),
+
+        # m.add("hello world")
+        # m.insert("hello world")
+        ((r"(?P<first>std::set(?P<setinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<adding>[\s\S]+(?P=var)).add\([ ]*(?P<elem>[^\)]+)\)"),
+         (r"std::set\g<setinfo> \g<var>\g<adding>.insert(\g<elem>)"), None, 70),
+
+        # m.contains("hello world")
+        # m.find("hello world") != m.end()
+        ((r"(?P<first>std::set(?P<setinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<containing>[\s\S]+(?P=var)).contains\([ ]*(?P<elem>[^\)]+)\)"),
+         (r"std::set\g<setinfo> \g<var>\g<containing>.find(\g<elem>) != \g<var>.end()"), None, 70),
+
+        # cout << m
+        # for (auto& obj: m) cout << obj
+        ((r"(?P<first>std::set(?P<setinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<before>[\s\S]+)std::cout[ ]*<<[ ]*(?P<cout>(?P=var))"),
+         (r"std::set\g<setinfo> \g<var>\g<before>for (auto& obj: \g<var>) std::cout << obj"), None, 70),
+        # ----------- Hash Set -----------
+
+        # ----------- Array List -----------
+        # ArrayList<String> l = new ArrayList();
+        # std::list<std::string> l;
+        ((r"ArrayList(?P<listinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*=[ ]*new[ ]*ArrayList[ ]*\(\)"),
+         (r"std::list\g<listinfo> \g<var>"), None, 0),
+
+        # l.add("hello world")
+        # l.push_back("hello world")
+        ((r"(?P<first>std::list(?P<listinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<adding>[\s\S]+(?P=var)).add\([ ]*(?P<elem>[^\)]+)\)"),
+         (r"std::list\g<listinfo> \g<var>\g<adding>.push_back(\g<elem>)"), None, 70),
+
+        # cout << l
+        # for (auto& obj: l) cout << obj
+        ((r"(?P<first>std::list(?P<listinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<before>[\s\S]+)std::cout[ ]*<<[ ]*(?P<cout>(?P=var))"),
+         (r"std::list\g<listinfo> \g<var>\g<before>for (auto& obj: \g<var>) std::cout << obj"), None, 70),
+        # ----------- Array List -----------
+
         #
         #
-        (r"",
-         r"", None, 0)
+        ((r""),
+         (r""), None, 0)
     ]
