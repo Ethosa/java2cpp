@@ -172,6 +172,7 @@ class Java2Cpp(Translator):
         (r"[\r\n]+[ ]*;[\r\n]+",
          r"\n", None, 0),
 
+
         # ----------- Hash Map -----------
         # HashMap<String, int> m = new HashMap<>();
         # std::map<std::string, int> m;
@@ -248,6 +249,12 @@ class Java2Cpp(Translator):
           r"(?P<getting>[\s\S]+(?P=var)).get\([ ]*(?P<elem>[^\)]+)\)"),
          (r"std::deque\g<deque> \g<var>\g<getting>.at(\g<elem>)"), None, 70),
 
+        # l.isEmpty()
+        # l.empty()
+        ((r"(?P<first>std::deque(?P<deque><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<check>[\s\S]+(?P=var)).isEmpty\([ ]*\)"),
+         (r"std::deque\g<deque> \g<var>\g<check>.empty()"), None, 70),
+
         # l.indexOf("a")
         # std::find(l.begin(), l.end(), "a")
         ((r"(?P<first>std::deque(?P<deque><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
@@ -260,6 +267,11 @@ class Java2Cpp(Translator):
           r"(?P<before>[\s\S]+)std::cout[ ]*<<[ ]*(?P<cout>(?P=var)[ ]*)(?P<last>[^\.])"),
          (r"std::deque\g<deque> \g<var>\g<before>for (auto& obj: \g<var>) std::cout << obj \g<last>"), None, 70),
         # ----------- Array List -----------
+
+        # java.util.Set
+        # Set
+        ((r"java\.[^\.]+\.(\w+)"),
+         (r"\1"), None, 0),
 
         #
         #

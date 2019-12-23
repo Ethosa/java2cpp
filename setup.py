@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="java2cpp",
-    version="0.0.2",
+    version="0.0.3",
     author="Ethosa",
     author_email="social.ethosa@gmail.com",
     description="Java to C++ language translator",
