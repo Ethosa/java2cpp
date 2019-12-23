@@ -121,8 +121,8 @@ class Java2Cpp(Translator):
          (r"#include <iostream>\n#include <vector>\n"
           r"#include <cstdlib>\n#include <time.h>\n#"
           r"include <map>\n#include <cassert>\n#incl"
-          r"ude <set>\n#include <list>\n#include <al"
-          r"gorithm>\n"), None, 0),
+          r"ude <set>\n#include <deque>\n#include <a"
+          r"lgorithm>\n"), None, 0),
 
         # Object
         # void*
@@ -203,6 +203,7 @@ class Java2Cpp(Translator):
          (r"std::map\g<mapinfo> \g<var_name>\g<getting>.count()"), None, 70),
         # ----------- Hash Map -----------
 
+
         # ----------- Hash Set -----------
         # HashSet<String> m = new HashSet();
         # std::set<std::string> m;
@@ -224,27 +225,40 @@ class Java2Cpp(Translator):
         # cout << m
         # for (auto& obj: m) cout << obj
         ((r"(?P<first>std::set(?P<setinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
-          r"(?P<before>[\s\S]+)std::cout[ ]*<<[ ]*(?P<cout>(?P=var))"),
-         (r"std::set\g<setinfo> \g<var>\g<before>for (auto& obj: \g<var>) std::cout << obj"), None, 70),
+          r"(?P<before>[\s\S]+)std::cout[ ]*<<[ ]*(?P<cout>(?P=var)[ ]*)(?P<last>[^\.])"),
+         (r"std::set\g<setinfo> \g<var>\g<before>for (auto& obj: \g<var>) std::cout << obj \g<last>"), None, 70),
         # ----------- Hash Set -----------
+
 
         # ----------- Array List -----------
         # ArrayList<String> l = new ArrayList();
-        # std::list<std::string> l;
-        ((r"ArrayList(?P<listinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*=[ ]*new[ ]*ArrayList[ ]*\(\)"),
-         (r"std::list\g<listinfo> \g<var>"), None, 0),
+        # std::deque<std::string> l;
+        ((r"ArrayList(?P<deque><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*=[ ]*new[ ]*ArrayList[ ]*\(\)"),
+         (r"std::deque\g<deque> \g<var>"), None, 0),
 
         # l.add("hello world")
         # l.push_back("hello world")
-        ((r"(?P<first>std::list(?P<listinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+        ((r"(?P<first>std::deque(?P<deque><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
           r"(?P<adding>[\s\S]+(?P=var)).add\([ ]*(?P<elem>[^\)]+)\)"),
-         (r"std::list\g<listinfo> \g<var>\g<adding>.push_back(\g<elem>)"), None, 70),
+         (r"std::deque\g<deque> \g<var>\g<adding>.push_back(\g<elem>)"), None, 70),
+
+        # l.get(0)
+        # l.at(0)
+        ((r"(?P<first>std::deque(?P<deque><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<getting>[\s\S]+(?P=var)).get\([ ]*(?P<elem>[^\)]+)\)"),
+         (r"std::deque\g<deque> \g<var>\g<getting>.at(\g<elem>)"), None, 70),
+
+        # l.indexOf("a")
+        # std::find(l.begin(), l.end(), "a")
+        ((r"(?P<first>std::deque(?P<deque><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<before>[\s\S]+)(?P<cout>(?P=var)).indexOf\([ ]*(?P<elem>[^\)]+)\)"),
+         (r"std::deque\g<deque> \g<var>\g<before>std::find(\g<var>.begin(), \g<var>.end(), \g<elem>)"), None, 70),
 
         # cout << l
         # for (auto& obj: l) cout << obj
-        ((r"(?P<first>std::list(?P<listinfo><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
-          r"(?P<before>[\s\S]+)std::cout[ ]*<<[ ]*(?P<cout>(?P=var))"),
-         (r"std::list\g<listinfo> \g<var>\g<before>for (auto& obj: \g<var>) std::cout << obj"), None, 70),
+        ((r"(?P<first>std::deque(?P<deque><[^>]+>)[ ]*(?P<var>[a-zA-Z0-9_]+)[ ]*)"
+          r"(?P<before>[\s\S]+)std::cout[ ]*<<[ ]*(?P<cout>(?P=var)[ ]*)(?P<last>[^\.])"),
+         (r"std::deque\g<deque> \g<var>\g<before>for (auto& obj: \g<var>) std::cout << obj \g<last>"), None, 70),
         # ----------- Array List -----------
 
         #

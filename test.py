@@ -40,6 +40,8 @@ class Main {
         ArrayList<String> c = new ArrayList();
         c.add("Hello world");
         System.out.println(c);
+        var index = c.indexOf("Hello world");
+        System.out.println(c.get(0));
     }
     public static int test(){
         var r = new Random();

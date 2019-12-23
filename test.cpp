@@ -5,7 +5,8 @@
 #include <map>
 #include <cassert>
 #include <set>
-#include <list>
+#include <deque>
+#include <algorithm>
 
 
 
@@ -40,9 +41,11 @@ class Main
         for (auto& obj: b) std::cout << obj << std::endl;
         if (b.find("lol") != b.end()) std::cout << "lol contains :|" << std::endl;
 
-        std::list<std::string> c;
+        std::deque<std::string> c;
         c.push_back("Hello world");
         for (auto& obj: c) std::cout << obj << std::endl;
+        auto index = std::find(c.begin(), c.end(), "Hello world");
+        std::cout << c.at(0) << std::endl;
     }
 
     public:
