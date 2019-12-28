@@ -22,11 +22,6 @@ class Java2Cpp(Translator):
         Translator.__init__(self, codeString, self.rules, useRegex)
 
     FIRST_RULES = [
-        # // ...
-        #
-        (r"([\r\n]*)[ ]*//[^\r\n]*",
-         r"\1", None, 0),
-
         # System.out.print("Hello world")
         # cout << "Hello world";
         (r"System.out.print[ ]*\([ ]*([^\r\n]+)[ ]*\)",
@@ -112,8 +107,8 @@ class Java2Cpp(Translator):
         # }
         #
         # ...
-        (r"}[\r\n]([ ]*)(\S)",
-         r"}\n\n\1\2", None, 0),
+        # (r"}[\r\n]([ ]*)(\S)",
+        #  r"}\n\n\1\2", None, 0),
 
         #
         # #include <iostream>
@@ -273,8 +268,15 @@ class Java2Cpp(Translator):
         ((r"java\.[^\.]+\.(\w+)"),
          (r"\1"), None, 0),
 
+        # for (int i: list_of_ints){ ... }
+        # for (int& i: list_of_ints){ ... }
+        ((r"([\r\n]+)([ ]*)for[ ]*\(([^ ]+)[ ]*([^:]+):[ ]*([^\)]+)\)"),
+         (r"\1\2for (\3& \4: \5)"),
+         None, 0),
+
         #
         #
         ((r""),
-         (r""), None, 0)
+         (r""),
+         None, 0)
     ]
